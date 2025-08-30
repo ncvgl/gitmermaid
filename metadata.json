@@ -1,0 +1,5 @@
+
+{
+  "name": "GitMermaid",
+  "description": "An AI-powered application that generates high-level architecture diagrams in MermaidJS format from a public Git repository URL."
+}
