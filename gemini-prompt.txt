@@ -1,9 +1,10 @@
-You are an expert software architect. Analyze the public Git repository at the following URL: ${repoUrl}. 
-Based on its likely purpose and file structure, create a high-level architecture diagram in MermaidJS 'graph TD' format. 
-The diagram should illustrate the main components and their interactions.
+Create a simple architecture diagram in MermaidJS 'graph TD' format.
 
-IMPORTANT INSTRUCTIONS:
-1. Your entire response must be ONLY the MermaidJS code, starting with 'graph TD'.
-2. Do not include any explanations, markdown fences (```), or any other text.
-3. If a node's text contains special characters like parentheses (), slashes /, or brackets [], you MUST enclose the entire text in double quotes. For example, use C["Description with (details/path)"] instead of C[Description with (details/path)].
-4. Keep the diagram concise - use maximum 20 nodes and 50 edges (arrows/connections) to ensure clarity and readability.
+RULES:
+- Maximum 6 nodes total
+- Maximum 8 connections total
+- Only show: Frontend → Backend → External Service
+- Use simple labels like "Frontend", "Backend", "Database", "API"
+- No individual files or dependencies
+
+Format: Start with 'graph TD' and return only MermaidJS code.

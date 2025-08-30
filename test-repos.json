@@ -1,0 +1,52 @@
+[
+  {
+    "name": "GitMermaid (Current Project)",
+    "url": "https://github.com/ncvgl/gitmermaid.git",
+    "description": "React/Express app for generating Mermaid diagrams from GitHub repositories"
+  },
+  {
+    "name": "Express.js",
+    "url": "https://github.com/expressjs/express.git",
+    "description": "Fast, unopinionated, minimalist web framework for Node.js"
+  },
+  {
+    "name": "React",
+    "url": "https://github.com/facebook/react.git",
+    "description": "A declarative, efficient, and flexible JavaScript library for building user interfaces"
+  },
+  {
+    "name": "Vue.js",
+    "url": "https://github.com/vuejs/vue.git",
+    "description": "Progressive JavaScript framework for building modern web interfaces"
+  },
+  {
+    "name": "Next.js",
+    "url": "https://github.com/vercel/next.js.git",
+    "description": "The React framework for production"
+  },
+  {
+    "name": "Lodash",
+    "url": "https://github.com/lodash/lodash.git",
+    "description": "A modern JavaScript utility library delivering modularity, performance & extras"
+  },
+  {
+    "name": "Axios",
+    "url": "https://github.com/axios/axios.git",
+    "description": "Promise based HTTP client for the browser and node.js"
+  },
+  {
+    "name": "TypeScript",
+    "url": "https://github.com/microsoft/TypeScript.git",
+    "description": "TypeScript is a superset of JavaScript that compiles to clean JavaScript output"
+  },
+  {
+    "name": "Webpack",
+    "url": "https://github.com/webpack/webpack.git",
+    "description": "A bundler for javascript and friends"
+  },
+  {
+    "name": "Django",
+    "url": "https://github.com/django/django.git",
+    "description": "High-level Python web framework that encourages rapid development"
+  }
+]

@@ -5,6 +5,9 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { extractRepoContextRobust } from './extractRepoContextRobust.js';
+import { validateMermaidDiagram } from './utils/mermaidValidator.js';
+import { getGitCloneUrl } from './utils/gitUrlParser.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,7 +52,13 @@ const cleanMermaidCode = (rawOutput) => {
     `;
   }
   
-  return cleaned.substring(graphStartIndex).trim();
+  let mermaidCode = cleaned.substring(graphStartIndex).trim();
+  
+  // Remove quotes from node labels to prevent syntax issues
+  mermaidCode = mermaidCode.replace(/"([^"]+)"/g, '$1');
+  mermaidCode = mermaidCode.replace(/'([^']+)'/g, '$1');
+  
+  return mermaidCode;
 };
 
 // Read the Gemini prompt from file
@@ -63,9 +72,50 @@ app.post('/api/generate-diagram', async (req, res) => {
     return res.status(400).json({ error: 'Repository URL is required' });
   }
 
-  const prompt = promptTemplate.replace('${repoUrl}', repoUrl);
-
   try {
+    // Convert user input to clone URL
+    const cloneUrl = getGitCloneUrl(repoUrl);
+    if (!cloneUrl) {
+      return res.status(400).json({ 
+        error: 'Invalid GitHub repository URL',
+        suggestion: 'Please provide a valid GitHub repository URL (e.g., https://github.com/user/repo or user/repo)'
+      });
+    }
+
+    console.log(`🚀 Starting repository analysis for: ${repoUrl}`);
+    console.log(`📥 Will extract from: ${cloneUrl}`);
+    
+    // Step 1: Extract repository context (caching handled internally)
+    // Uses defaults from extractRepoContextRobust.js:
+    // - maxFiles: 500
+    // - maxTotalSize: 10MB
+    // - maxFileSize: 1MB per file
+    const extractionResult = await extractRepoContextRobust(cloneUrl, {
+      respectGitIgnore: true,
+      respectGeminiIgnore: true,
+      useDefaultExcludes: true,
+      cleanupOnSuccess: true,
+      cleanupOnError: true,
+      useCache: true // Enable caching
+    });
+
+    if (!extractionResult.success) {
+      console.error('Repository extraction failed:', extractionResult.error);
+      return res.status(400).json({ 
+        error: `Failed to analyze repository: ${extractionResult.error.message}`,
+        suggestion: extractionResult.error.suggestion
+      });
+    }
+
+    const contentLength = extractionResult.data.content.length;
+    console.log(`✅ Repository extracted: ${extractionResult.data.fileCount} files, ${(extractionResult.data.totalSize / 1024).toFixed(2)} KB`);
+    console.log(`📝 Context string length: ${contentLength.toLocaleString()} characters`);
+
+    // Step 2: Create prompt with repository context
+    const prompt = promptTemplate + '\n\n' + 
+      'REPOSITORY CONTEXT:\n' + extractionResult.data.content;
+
+    // Step 3: Generate diagram with Vertex AI
     const request = {
       contents: [{
         role: 'user',
@@ -74,9 +124,9 @@ app.post('/api/generate-diagram', async (req, res) => {
         }]
       }],
       generationConfig: {
-        temperature: 0.3,
-        topP: 0.9,
-        maxOutputTokens: 10000,
+        temperature: 0.1,
+        topP: 0.8,
+        maxOutputTokens: 1000, // Further reduced for simpler diagrams
       }
     };
 
@@ -89,11 +139,57 @@ app.post('/api/generate-diagram', async (req, res) => {
     }
 
     const cleanedCode = cleanMermaidCode(rawCode);
-    res.json({ diagramCode: cleanedCode });
+    
+    // Step 4: Validate the generated diagram
+    console.log('🔍 Validating generated diagram...');
+    try {
+      const validationResult = validateMermaidDiagram(cleanedCode);
+      console.log(`✅ Diagram validation: ${validationResult.isValid ? 'VALID' : 'INVALID'}`);
+      
+      if (validationResult.hasWarnings()) {
+        console.log(`⚠️  Validation warnings: ${validationResult.warnings.join(', ')}`);
+      }
+      
+      res.json({ 
+        diagramCode: cleanedCode,
+        validation: {
+          isValid: validationResult.isValid,
+          errors: validationResult.errors,
+          warnings: validationResult.warnings
+        },
+        metadata: {
+          repoUrl: repoUrl,
+          cloneUrl: cloneUrl,
+          filesAnalyzed: extractionResult.data.fileCount,
+          repoSize: `${(extractionResult.data.totalSize / 1024).toFixed(2)} KB`,
+          processingTime: `${(extractionResult.duration / 1000).toFixed(2)}s`
+        }
+      });
+    } catch (validationError) {
+      console.warn('⚠️  Could not validate diagram:', validationError.message);
+      // Still return the diagram even if validation fails
+      res.json({ 
+        diagramCode: cleanedCode,
+        validation: {
+          isValid: null,
+          errors: [`Validation failed: ${validationError.message}`],
+          warnings: []
+        },
+        metadata: {
+          repoUrl: repoUrl,
+          cloneUrl: cloneUrl,
+          filesAnalyzed: extractionResult.data.fileCount,
+          repoSize: `${(extractionResult.data.totalSize / 1024).toFixed(2)} KB`,
+          processingTime: `${(extractionResult.duration / 1000).toFixed(2)}s`
+        }
+      });
+    }
+
   } catch (error) {
-    console.error("Error generating diagram with Vertex AI:", error);
+    console.error("Error generating diagram:", error);
     res.status(500).json({ 
-      error: "Failed to generate the architecture diagram. Please check the repository URL and try again." 
+      error: "Failed to generate the architecture diagram. Please check the repository URL and try again.",
+      details: error.message
     });
   }
 });

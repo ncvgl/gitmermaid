@@ -24,3 +24,6 @@ yarn-error.log*
 
 # Misc
 *.log
+
+# Caching
+cache/

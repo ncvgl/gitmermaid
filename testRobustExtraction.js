@@ -43,7 +43,6 @@ async function runTests() {
     console.log(`${'='.repeat(80)}`);
     
     const result = await extractAndSave(testCase.url, testCase.outputFile, {
-      maxFiles: 50, // Limit for testing
       cleanupOnSuccess: true,
       cleanupOnError: true
     });

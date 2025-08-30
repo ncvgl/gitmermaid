@@ -50,7 +50,7 @@ type Tab = 'diagram' | 'code';
 
 // Main Application Component
 const App: React.FC = () => {
-  const [repoUrl, setRepoUrl] = useState<string>('https://github.com/facebook/react');
+  const [repoUrl, setRepoUrl] = useState<string>('https://github.com/ncvgl/gitmermaid');
   const [diagramCode, setDiagramCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +67,8 @@ const App: React.FC = () => {
         startOnLoad: false,
         theme: 'neutral', // A clean, light theme
         fontFamily: '"Inter", sans-serif',
+        suppressErrorRendering: true, // Prevent Mermaid from showing error UI
+        logLevel: 1, // Reduce console logging (1=fatal only)
         themeVariables: {
             background: '#ffffff', // bg-white
             primaryColor: '#f3f4f6', // bg-gray-100
