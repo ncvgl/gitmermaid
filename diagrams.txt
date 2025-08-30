@@ -1,0 +1,11 @@
+System Architecture Overview – shows the main components (API, services, DB) and how they connect.
+
+User Flow – illustrates the step-by-step path a request takes from user input to output.
+
+Data Flow – maps how data moves and transforms through the system.
+
+Folder-to-Component Mapping – links code directories to their architectural roles.
+
+Key Dependencies / Services – highlights the internal modules and external libraries the project relies on.
+
+Deployment Architecture – shows how the system’s services are deployed and interact in production.

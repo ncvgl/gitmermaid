@@ -1,0 +1,16 @@
+[
+  "Mermaid diagrams are written in plain text, so you can sketch software flows without touching design tools.",
+  "GitHub can render Mermaid diagrams directly inside Markdown files.",
+  "GitLab added built-in Mermaid support to make documentation more visual.",
+  "Mermaid was originally created in 2014 by Knut Sveidqvist to simplify diagramming for developers.",
+  "You can create flowcharts, sequence diagrams, Gantt charts, and even pie charts with Mermaid.",
+  "Mermaid diagrams can be version-controlled since they live as text alongside your code.",
+  "Documentation frameworks like Docusaurus and MkDocs have native Mermaid support.",
+  "Mermaid’s syntax was inspired by Markdown, so it’s quick to learn and easy to type.",
+  "Mermaid is an open-source project maintained by contributors worldwide.",
+  "You can style Mermaid diagrams with themes and CSS to match your project’s design.",
+  "Mermaid diagrams can be rendered directly in the browser with just a small JavaScript library.",
+  "The name “Mermaid” was chosen as a playful reference to drawing flows, like water.",
+  "GitLab’s adoption of Mermaid in 2020 gave the project a big visibility boost.",
+  "GitHub added native Mermaid support in 2022, making it mainstream in open source."
+]

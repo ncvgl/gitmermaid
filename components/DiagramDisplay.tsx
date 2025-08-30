@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '../types'; // Ensures the global Mermaid type is available
 
 interface DiagramDisplayProps {
   diagramCode: string;

@@ -3,6 +3,38 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { generateDiagram } from './services/geminiService';
 import DiagramDisplay from './components/DiagramDisplay';
 import './types';
+import sentences from './sentences.json';
+
+// Custom hook for typewriter effect
+const useTypewriter = (text: string, speed: number = 50) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (!text) {
+      setDisplayedText('');
+      return;
+    }
+
+    setIsTyping(true);
+    setDisplayedText('');
+    let currentIndex = 0;
+
+    const timer = setInterval(() => {
+      if (currentIndex < text.length) {
+        setDisplayedText(text.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTyping(false);
+        clearInterval(timer);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [text, speed]);
+
+  return { displayedText, isTyping };
+};
 
 // SVG Icon for the header, updated for the light theme
 const LogoIcon: React.FC = () => (
@@ -24,6 +56,9 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('diagram');
   const [copyButtonText, setCopyButtonText] = useState('Copy');
+  const [currentSentence, setCurrentSentence] = useState<string>('');
+  const [loadingSeconds, setLoadingSeconds] = useState<number>(0);
+  const { displayedText: typewriterText, isTyping } = useTypewriter(currentSentence, 30);
 
   useEffect(() => {
     // Initialize Mermaid.js on component mount with a light theme
@@ -44,6 +79,65 @@ const App: React.FC = () => {
       });
     }
   }, []);
+
+  // Handle sentence rotation during loading
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    let usedSentences: number[] = [];
+    
+    if (isLoading) {
+      // Set initial random sentence
+      const getRandomSentence = () => {
+        if (usedSentences.length >= sentences.length) {
+          usedSentences = []; // Reset when all sentences have been used
+        }
+        
+        let availableIndices = sentences
+          .map((_, index) => index)
+          .filter(index => !usedSentences.includes(index));
+        
+        const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        usedSentences.push(randomIndex);
+        return sentences[randomIndex];
+      };
+      
+      setCurrentSentence(getRandomSentence());
+      
+      // Rotate sentences every 6 seconds (giving time for typewriter effect)
+      interval = setInterval(() => {
+        setCurrentSentence(getRandomSentence());
+      }, 6000);
+    } else {
+      setCurrentSentence('');
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isLoading]);
+
+  // Handle loading seconds counter
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isLoading) {
+      setLoadingSeconds(1); // Start at 1 second
+      
+      interval = setInterval(() => {
+        setLoadingSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      setLoadingSeconds(0);
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isLoading]);
 
   const handleGenerateClick = useCallback(async () => {
     if (!repoUrl) {
@@ -151,22 +245,32 @@ const App: React.FC = () => {
         )}
 
         {/* Diagram Area */}
-        <main className="w-full bg-white border border-gray-200 rounded-lg shadow-sm min-h-[500px] flex justify-center items-center p-4 sm:p-8 transition-all duration-300">
+        <main className="w-full bg-white border border-gray-200 rounded-lg shadow-sm min-h-[500px] transition-all duration-300 overflow-hidden">
           {!isLoading && !diagramCode && (
-            <div className="text-center text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h2 className="text-xl font-semibold">Your Diagram Awaits</h2>
-              <p>The generated architecture diagram will appear here.</p>
+            <div className="flex justify-center items-center h-full min-h-[500px]">
+              <div className="text-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h2 className="text-xl font-semibold">Your Diagram Awaits</h2>
+                <p>The generated architecture diagram will appear here.</p>
+              </div>
             </div>
           )}
 
           {isLoading && (
-            <div className="text-center text-gray-600">
-              <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold">Analyzing Repository...</h2>
-              <p>AI is crafting your diagram. This may take a moment.</p>
+            <div className="flex justify-center items-center h-full min-h-[500px]">
+              <div className="text-center text-gray-600">
+                <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <h2 className="text-xl font-semibold">Analyzing Repository... {loadingSeconds}s</h2>
+                <p className="mb-3">AI is crafting your diagram. This may take a moment.</p>
+                {typewriterText && (
+                  <p className="text-sm text-gray-500 italic min-h-[20px]">
+                    {typewriterText}
+                    {isTyping && <span className="animate-pulse">|</span>}
+                  </p>
+                )}
+              </div>
             </div>
           )}
           
