@@ -74,7 +74,7 @@ const DEFAULT_EXCLUDES = [
 
 const DEFAULT_IGNORED_FOLDERS = ['node_modules', '.git', 'dist', 'build', 'coverage'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file (skip larger files)
-const MAX_OUTPUT_CHARS = 100 * 1000 * 4; // 400K characters (100K tokens for LLM, ~4 chars per token)
+const MAX_OUTPUT_CHARS = 50 * 1000; // 50K characters - much smaller limit
 const MAX_FILES = 500;
 const MAX_TREE_ITEMS = 200;
 const MAX_LINES_PER_FILE = 1000;
@@ -606,7 +606,7 @@ async function extractRepoContextRobust(repoUrl, options = {}) {
       execSync(`git clone "${repoUrl}" "${cloneDir}"`, {
         cwd: tempDir,
         stdio: 'pipe',
-        timeout: 300000 // 5 minute timeout for large repos
+        timeout: 20000 // 20 second timeout for repos
       });
       console.log('✅ Repository cloned successfully');
     } catch (cloneError) {

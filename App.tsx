@@ -298,7 +298,8 @@ const App: React.FC = () => {
         </main>
         
         <footer className="text-center text-gray-500 mt-10 text-sm">
-          <p>Powered by Google Gemini & Mermaid.js</p>
+          <p>Powered by Gemini, Mermaid.js, <a href="https://ncvgl.github.io" target="_blank">ncvgl.github.io</a>
+          </p>
         </footer>
       </div>
     </div>

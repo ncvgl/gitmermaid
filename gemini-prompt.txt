@@ -1,10 +1,58 @@
-Create a simple architecture diagram in MermaidJS 'graph TD' format.
+You are an expert software architect. Analyze the provided repository context and create 6 different Mermaid diagrams to visualize the system architecture.
+
+Generate exactly 6 diagrams in MermaidJS format. IMPORTANT: Each diagram must be in its own separate ```mermaid code block. Follow this exact structure:
+
+## 1. System Architecture Overview
+
+```mermaid
+graph TD
+    [Show main components (API, services, database, frontend, etc.) and their connections]
+```
+
+## 2. User Flow
+
+```mermaid
+graph TD
+    [Illustrate step-by-step user journey from input to output]
+```
+
+## 3. Data Flow
+
+```mermaid
+graph TD
+    [Map how data moves and transforms through the system]
+```
+
+## 4. Folder-to-Component Mapping
+
+```mermaid
+graph TD
+    [Link code directories to their architectural roles]
+```
+
+## 5. Key Dependencies / Services
+
+```mermaid
+graph TD
+    [Highlight internal modules and external libraries the project relies on]
+```
+
+## 6. Deployment Architecture
+
+```mermaid
+graph TD
+    [Show how services are deployed and interact in production]
+```
 
 RULES:
-- Maximum 6 nodes total
-- Maximum 8 connections total
-- Only show: Frontend → Backend → External Service
-- Use simple labels like "Frontend", "Backend", "Database", "API"
-- No individual files or dependencies
+- Use only 'graph TD' format for all diagrams
+- Keep each diagram simple (max 8 nodes per diagram)
+- Use different colors for different types of components using style declarations
+- Focus on the most important architectural elements
+- Make connections clear and logical
+- Use descriptive node labels
+- Include style declarations like: style NodeName fill:#color,stroke:#333,stroke-width:2px
+- CRITICAL: Each diagram must be in its own separate ```mermaid code block with closing ```
+- Do NOT put multiple diagrams in one code block
 
-Format: Start with 'graph TD' and return only MermaidJS code.
+Based on the repository context below, create these 6 diagrams:
