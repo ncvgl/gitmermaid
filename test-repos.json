@@ -23,5 +23,20 @@
     "name": "tinygrad",
     "url": "https://github.com/tinygrad/tinygrad",
     "description": "A simple and powerful neural network framework in <1000 lines of code"
+  },
+  {
+    "name": "TodoMVC",
+    "url": "https://github.com/tastejs/todomvc",
+    "description": "Helping you select a JavaScript framework - Todo apps for React.js, Angular, Vue and many more"
+  },
+  {
+    "name": "Vue HackerNews 2.0",
+    "url": "https://github.com/vuejs/vue-hackernews-2.0",
+    "description": "HackerNews clone built with Vue 2.0, vue-router & vuex, with server-side rendering"
+  },
+  {
+    "name": "RealWorld",
+    "url": "https://github.com/gothinkster/realworld",
+    "description": "The mother of all demo apps - Exemplary fullstack Medium.com clone"
   }
 ]

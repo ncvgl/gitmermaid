@@ -38,31 +38,8 @@ const model = vertexAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
 });
 
-// Clean Mermaid code helper
-const cleanMermaidCode = (rawOutput) => {
-  const cleaned = rawOutput.replace(/```mermaid/g, '').replace(/```/g, '');
-  const graphStartIndex = cleaned.search(/graph\s+(TD|LR|TB|RL|BT)/);
-
-  if (graphStartIndex === -1) {
-    console.error("Could not find a valid Mermaid graph definition in the response.");
-    return `
-      graph TD
-        A[Error] --> B(Could not generate diagram);
-        B --> C{Please try a different URL or rephrase your request};
-    `;
-  }
-  
-  let mermaidCode = cleaned.substring(graphStartIndex).trim();
-  
-  // Remove quotes from node labels to prevent syntax issues
-  mermaidCode = mermaidCode.replace(/"([^"]+)"/g, '$1');
-  mermaidCode = mermaidCode.replace(/'([^']+)'/g, '$1');
-  
-  return mermaidCode;
-};
-
 // Read the Gemini prompt from file
-const promptTemplate = fs.readFileSync(path.join(__dirname, 'gemini-prompt.txt'), 'utf8');
+const promptTemplate = fs.readFileSync(path.join(__dirname, 'gemini-prompt-1.txt'), 'utf8');
 
 // API endpoint for generating diagrams
 app.post('/api/generate-diagram', async (req, res) => {
@@ -126,7 +103,7 @@ app.post('/api/generate-diagram', async (req, res) => {
       generationConfig: {
         temperature: 0.1,
         topP: 0.8,
-        maxOutputTokens: 1000, // Further reduced for simpler diagrams
+        maxOutputTokens: 15000, // Increased for 6 diagrams
       }
     };
 
@@ -138,12 +115,13 @@ app.post('/api/generate-diagram', async (req, res) => {
       throw new Error("Received an empty response from the API.");
     }
 
-    const cleanedCode = cleanMermaidCode(rawCode);
+    // Simple replacement to wrap square bracket content with quotes
+    const formattedCode = rawCode.replace('[', '["').replace(']', '"]');
     
     // Step 4: Validate the generated diagram
     console.log('🔍 Validating generated diagram...');
     try {
-      const validationResult = validateMermaidDiagram(cleanedCode);
+      const validationResult = validateMermaidDiagram(formattedCode);
       console.log(`✅ Diagram validation: ${validationResult.isValid ? 'VALID' : 'INVALID'}`);
       
       if (validationResult.hasWarnings()) {
@@ -151,7 +129,7 @@ app.post('/api/generate-diagram', async (req, res) => {
       }
       
       res.json({ 
-        diagramCode: cleanedCode,
+        diagramCode: formattedCode,
         validation: {
           isValid: validationResult.isValid,
           errors: validationResult.errors,
@@ -169,7 +147,7 @@ app.post('/api/generate-diagram', async (req, res) => {
       console.warn('⚠️  Could not validate diagram:', validationError.message);
       // Still return the diagram even if validation fails
       res.json({ 
-        diagramCode: cleanedCode,
+        diagramCode: formattedCode,
         validation: {
           isValid: null,
           errors: [`Validation failed: ${validationError.message}`],

@@ -46,7 +46,7 @@ graph TD
 
 RULES:
 - Use only 'graph TD' format for all diagrams
-- Keep each diagram simple (max 8 nodes per diagram)
+- Keep each diagram simple (max 20 nodes per diagram)
 - Use different colors for different types of components using style declarations
 - Focus on the most important architectural elements
 - Make connections clear and logical
