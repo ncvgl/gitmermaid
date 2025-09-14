@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import mermaid from 'mermaid';
@@ -8,7 +8,12 @@ interface MarkdownDisplayProps {
 }
 
 const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content }) => {
+  const [viewMode, setViewMode] = useState<'rendered' | 'raw'>('rendered');
+  const [copyButtonText, setCopyButtonText] = useState('Copy');
   useEffect(() => {
+    // Only initialize and render mermaid when in rendered mode
+    if (viewMode !== 'rendered') return;
+
     // Initialize mermaid
     mermaid.initialize({
       startOnLoad: false,
@@ -45,7 +50,14 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content }) => {
 
     // Small delay to ensure DOM is ready
     setTimeout(renderMermaidDiagrams, 100);
-  }, [content]);
+  }, [content, viewMode]);
+
+  const handleCopyMarkdown = () => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopyButtonText('Copied!');
+      setTimeout(() => setCopyButtonText('Copy'), 2000);
+    });
+  };
 
   const components = {
     code: ({ node, inline, className, children, ...props }: any) => {
@@ -71,14 +83,41 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content }) => {
   };
 
   return (
-    <div className="w-full h-full p-6 bg-white overflow-auto">
-      <div className="prose prose-lg max-w-none">
-        <ReactMarkdown
-          components={components}
-          remarkPlugins={[remarkGfm]}
+    <div className="w-full h-full bg-white overflow-hidden relative">
+      {/* Control Buttons */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-md p-2">
+        <button
+          onClick={() => setViewMode(viewMode === 'rendered' ? 'raw' : 'rendered')}
+          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition-colors"
         >
-          {content}
-        </ReactMarkdown>
+          {viewMode === 'rendered' ? 'Show Raw' : 'Show Rendered'}
+        </button>
+        {viewMode === 'raw' && (
+          <button
+            onClick={handleCopyMarkdown}
+            className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md text-sm font-medium transition-colors"
+          >
+            {copyButtonText}
+          </button>
+        )}
+      </div>
+
+      {/* Content Area */}
+      <div className="w-full h-full p-6 overflow-auto">
+        {viewMode === 'rendered' ? (
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown
+              components={components}
+              remarkPlugins={[remarkGfm]}
+            >
+              {content}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <pre className="text-left text-sm text-gray-800 whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded-md border">
+            {content}
+          </pre>
+        )}
       </div>
     </div>
   );

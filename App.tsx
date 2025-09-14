@@ -181,7 +181,7 @@ const App: React.FC = () => {
         </header>
 
         <p className="text-center text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
-          Enter a public Git repository URL and let AI generate a high-level architecture diagram for you.
+          Enter a public Git repository URL and let AI generate high-level architecture diagrams for you.
         </p>
 
         {/* Input Form */}

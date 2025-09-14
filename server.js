@@ -73,7 +73,7 @@ app.post('/api/generate-diagram', async (req, res) => {
       useDefaultExcludes: true,
       cleanupOnSuccess: true,
       cleanupOnError: true,
-      useCache: true // Enable caching
+      useCache: false // Disable caching - recompute every time
     });
 
     if (!extractionResult.success) {
