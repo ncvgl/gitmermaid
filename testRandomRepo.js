@@ -32,9 +32,98 @@ function formatDateTime() {
   return now.toISOString().replace(/[:.]/g, '-').slice(0, -5); // YYYY-MM-DDTHH-MM-SS
 }
 
+async function testSingleRepository(repo, index) {
+  const startTime = Date.now();
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/generate-diagram`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ repoUrl: repo.url }),
+    });
+
+    const duration = Date.now() - startTime;
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.log(colorize('red', `  ${index}: ${repo.name} - ❌ FAILED (${response.status}) - ${error.error}`));
+      return { success: false, repo, index, error: error.error };
+    }
+
+    const data = await response.json();
+    
+    // Save only the raw endpoint output
+    const timestamp = formatDateTime();
+    const filename = `diagram_${index}_${repo.name.replace(/\s+/g, '_')}_${timestamp}.md`;
+    const filepath = path.join(__dirname, filename);
+    
+    fs.writeFileSync(filepath, data.diagramCode);
+    
+    console.log(colorize('green', `  ${index}: ${repo.name} - ✅ SUCCESS (${duration}ms) - Saved to: ${filename}`));
+    
+    return { success: true, repo, index, filename, duration };
+    
+  } catch (error) {
+    console.log(colorize('red', `  ${index}: ${repo.name} - ❌ ERROR: ${error.message}`));
+    return { success: false, repo, index, error: error.message };
+  }
+}
+
+async function runWithConcurrencyLimit(tasks, limit = 10) {
+  const results = [];
+  const executing = [];
+  
+  for (const task of tasks) {
+    const promise = task().then(result => {
+      executing.splice(executing.indexOf(promise), 1);
+      return result;
+    });
+    
+    results.push(promise);
+    executing.push(promise);
+    
+    if (executing.length >= limit) {
+      await Promise.race(executing);
+    }
+  }
+  
+  return Promise.all(results);
+}
+
+function parseRangeOrIndex(arg) {
+  if (!arg) return null;
+
+  // Check if it's a range (e.g., "10-20")
+  if (arg.includes('-')) {
+    const [start, end] = arg.split('-').map(s => parseInt(s.trim()));
+    if (isNaN(start) || isNaN(end) || start > end) {
+      throw new Error(`Invalid range: ${arg}. Use format "start-end" where start <= end`);
+    }
+    return { type: 'range', start, end };
+  }
+
+  // Single index
+  const index = parseInt(arg);
+  if (isNaN(index)) {
+    throw new Error(`Invalid index: ${arg}. Use a number or range like "10-20"`);
+  }
+  return { type: 'single', index };
+}
+
 async function testRandomRepository() {
-  // Get repository index from command line argument
-  const repoIndex = process.argv[2] ? parseInt(process.argv[2]) : null;
+  // Get repository index or range from command line argument
+  let selection = null;
+  try {
+    selection = parseRangeOrIndex(process.argv[2]);
+  } catch (error) {
+    console.error(colorize('red', `❌ ${error.message}`));
+    console.log(colorize('yellow', '💡 Usage: node testRandomRepo.js [index] or [start-end]'));
+    console.log(colorize('yellow', '   Examples: node testRandomRepo.js 5'));
+    console.log(colorize('yellow', '             node testRandomRepo.js 10-15'));
+    process.exit(1);
+  }
   
   // Load test repositories
   const testReposPath = path.join(__dirname, 'test-repos.json');
@@ -47,30 +136,6 @@ async function testRandomRepository() {
     console.error(colorize('red', `❌ Failed to load test repositories: ${error.message}`));
     process.exit(1);
   }
-  
-  // Select repository based on index or randomly
-  let selectedRepo;
-  if (repoIndex !== null) {
-    if (repoIndex < 0 || repoIndex >= testRepos.length) {
-      console.error(colorize('red', `❌ Invalid index: ${repoIndex}. Must be between 0 and ${testRepos.length - 1}`));
-      console.log(colorize('cyan', '\n📋 Available repositories:'));
-      testRepos.forEach((repo, idx) => {
-        console.log(colorize('gray', `  ${idx}: ${repo.name} - ${repo.description}`));
-      });
-      process.exit(1);
-    }
-    selectedRepo = testRepos[repoIndex];
-    console.log(colorize('cyan', `📊 Testing Repository #${repoIndex}\n`));
-  } else {
-    selectedRepo = testRepos[Math.floor(Math.random() * testRepos.length)];
-    console.log(colorize('cyan', '🎲 Testing Random Repository Diagram Generation\n'));
-  }
-  
-  const randomRepo = selectedRepo;
-  
-  console.log(colorize('blue', `📋 Selected repository: ${randomRepo.name}`));
-  console.log(colorize('gray', `📋 Description: ${randomRepo.description}`));
-  console.log(colorize('gray', `🔗 URL: ${randomRepo.url}\n`));
   
   // Check if server is running
   try {
@@ -88,58 +153,102 @@ async function testRandomRepository() {
     }
   }
   
-  try {
-    const startTime = Date.now();
-    console.log(colorize('yellow', '⏳ Generating diagrams...'));
-    
-    const response = await fetch(`${API_BASE_URL}/api/generate-diagram`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ repoUrl: randomRepo.url }),
-    });
+  // Handle specific selection
+  if (selection !== null) {
+    let selectedRepos, selectedIndices;
 
-    const duration = Date.now() - startTime;
-    
-    if (!response.ok) {
-      const error = await response.json();
-      console.log(colorize('red', `❌ FAILED (${response.status})`));
-      console.log(colorize('red', `   Error: ${error.error}`));
-      if (error.suggestion) {
-        console.log(colorize('yellow', `   Suggestion: ${error.suggestion}`));
+    if (selection.type === 'single') {
+      const repoIndex = selection.index;
+      if (repoIndex < 0 || repoIndex >= testRepos.length) {
+        console.error(colorize('red', `❌ Invalid index: ${repoIndex}. Must be between 0 and ${testRepos.length - 1}`));
+        console.log(colorize('cyan', '\n📋 Available repositories:'));
+        testRepos.forEach((repo, idx) => {
+          console.log(colorize('gray', `  ${idx}: ${repo.name} - ${repo.description}`));
+        });
+        process.exit(1);
       }
-      return;
+      selectedRepos = [testRepos[repoIndex]];
+      selectedIndices = [repoIndex];
+    } else {
+      // Range
+      const { start, end } = selection;
+      if (start < 0 || end >= testRepos.length) {
+        console.error(colorize('red', `❌ Invalid range: ${start}-${end}. Indices must be between 0 and ${testRepos.length - 1}`));
+        console.log(colorize('cyan', '\n📋 Available repositories:'));
+        testRepos.forEach((repo, idx) => {
+          console.log(colorize('gray', `  ${idx}: ${repo.name} - ${repo.description}`));
+        });
+        process.exit(1);
+      }
+      selectedRepos = testRepos.slice(start, end + 1);
+      selectedIndices = Array.from({length: end - start + 1}, (_, i) => start + i);
     }
 
-    const data = await response.json();
+    console.log(colorize('cyan', `📊 Testing ${selectedRepos.length} repositories in parallel\n`));
+    console.log(colorize('blue', `📋 Selected repositories:\n`));
+
+    selectedRepos.forEach((repo, idx) => {
+      console.log(colorize('gray', `  ${selectedIndices[idx]}: ${repo.name}`));
+    });
+
+    console.log(colorize('yellow', '\n⏳ Starting parallel generation (max 10 concurrent)...\n'));
+
+    const tasks = selectedRepos.map((repo, idx) => () => testSingleRepository(repo, selectedIndices[idx]));
+    const results = await runWithConcurrencyLimit(tasks, 10);
+
+    // Summary
+    const successful = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
+
+    console.log(colorize('cyan', '\n📊 Summary:'));
+    console.log(colorize('green', `  ✅ Successful: ${successful.length}/${selectedRepos.length}`));
+    if (failed.length > 0) {
+      console.log(colorize('red', `  ❌ Failed: ${failed.length}/${selectedRepos.length}`));
+      failed.forEach(f => {
+        console.log(colorize('red', `     - ${f.repo.name}: ${f.error}`));
+      });
+    }
+
+    if (successful.length > 0) {
+      console.log(colorize('blue', '\n📁 Generated files:'));
+      successful.forEach(s => {
+        console.log(colorize('gray', `  - ${s.filename} (${s.duration}ms)`));
+      });
+    }
+
+  } else {
+    // Run all repositories in parallel
+    console.log(colorize('cyan', '🚀 Testing ALL repositories in parallel\n'));
+    console.log(colorize('blue', `📋 Found ${testRepos.length} repositories to test:\n`));
     
-    console.log(colorize('green', `✅ SUCCESS (${duration}ms)`));
-    console.log(colorize('blue', `📊 Metadata:`));
-    console.log(colorize('gray', `   Files analyzed: ${data.metadata?.filesAnalyzed || 'unknown'}`));
-    console.log(colorize('gray', `   Repo size: ${data.metadata?.repoSize || 'unknown'}`));
-    console.log(colorize('gray', `   Processing time: ${data.metadata?.processingTime || 'unknown'}`));
+    testRepos.forEach((repo, idx) => {
+      console.log(colorize('gray', `  ${idx}: ${repo.name}`));
+    });
     
-    // Save only the raw endpoint output
-    const timestamp = formatDateTime();
-    const filename = `diagram_${timestamp}.md`;
-    const filepath = path.join(__dirname, filename);
+    console.log(colorize('yellow', '\n⏳ Starting parallel generation (max 10 concurrent)...\n'));
     
-    const markdownContent = data.diagramCode;
+    const tasks = testRepos.map((repo, idx) => () => testSingleRepository(repo, idx));
+    const results = await runWithConcurrencyLimit(tasks, 10);
     
-    // Save to file
-    fs.writeFileSync(filepath, markdownContent);
+    // Summary
+    const successful = results.filter(r => r.success);
+    const failed = results.filter(r => !r.success);
     
-    console.log(colorize('green', `\n✅ Diagrams saved to: ${filename}`));
-    console.log(colorize('blue', `📄 File path: ${filepath}`));
+    console.log(colorize('cyan', '\n📊 Summary:'));
+    console.log(colorize('green', `  ✅ Successful: ${successful.length}/${testRepos.length}`));
+    if (failed.length > 0) {
+      console.log(colorize('red', `  ❌ Failed: ${failed.length}/${testRepos.length}`));
+      failed.forEach(f => {
+        console.log(colorize('red', `     - ${f.repo.name}: ${f.error}`));
+      });
+    }
     
-    // Show preview of first few lines
-    const firstLines = data.diagramCode.split('\n').slice(0, 5).join('\n');
-    console.log(colorize('gray', `\n📝 Preview of generated content:`));
-    console.log(colorize('gray', `${firstLines.replace(/\n/g, '\n   ')}`));
-    
-  } catch (error) {
-    console.log(colorize('red', `❌ ERROR: ${error.message}`));
+    if (successful.length > 0) {
+      console.log(colorize('blue', '\n📁 Generated files:'));
+      successful.forEach(s => {
+        console.log(colorize('gray', `  - ${s.filename} (${s.duration}ms)`));
+      });
+    }
   }
 }
 

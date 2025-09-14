@@ -1,8 +1,10 @@
 You are an expert software architect. Analyze the provided repository context and create 6 different Mermaid diagrams to visualize the system architecture.
 
-Generate exactly 6 diagrams in MermaidJS format. IMPORTANT: Each diagram must be in its own separate ```mermaid code block. Follow this exact structure:
+Generate exactly 6 diagrams in MermaidJS format. IMPORTANT: Each diagram must be in its own separate ```mermaid code block. For each diagram, add a single sentence explanation that describes what THIS SPECIFIC diagram shows based on the actual repository content. Follow this exact structure:
 
 ## 1. System Architecture Overview
+
+[Write one sentence explaining what this specific architecture diagram shows for this repository]
 
 ```mermaid
 graph TD
@@ -11,12 +13,16 @@ graph TD
 
 ## 2. User Flow
 
+[Write one sentence explaining what this specific user flow shows for this repository]
+
 ```mermaid
 graph TD
     [Illustrate step-by-step user journey from input to output]
 ```
 
 ## 3. Data Flow
+
+[Write one sentence explaining what this specific data flow shows for this repository]
 
 ```mermaid
 graph TD
@@ -25,6 +31,8 @@ graph TD
 
 ## 4. Folder-to-Component Mapping
 
+[Write one sentence explaining what this specific folder structure mapping shows for this repository]
+
 ```mermaid
 graph TD
     [Link code directories to their architectural roles]
@@ -32,12 +40,16 @@ graph TD
 
 ## 5. Key Dependencies / Services
 
+[Write one sentence explaining what this specific dependencies diagram shows for this repository]
+
 ```mermaid
 graph TD
     [Highlight internal modules and external libraries the project relies on]
 ```
 
 ## 6. Deployment Architecture
+
+[Write one sentence explaining what this specific deployment setup shows for this repository]
 
 ```mermaid
 graph TD
@@ -54,5 +66,7 @@ RULES:
 - Include style declarations like: style NodeName fill:#color,stroke:#333,stroke-width:2px
 - CRITICAL: Each diagram must be in its own separate ```mermaid code block with closing ```
 - Do NOT put multiple diagrams in one code block
+- IMPORTANT: Style declarations must come AFTER the graph definition, never inline. Write all nodes and connections first, then add all style declarations at the end
+- IMPORTANT: All nodes must have an explicit node ID, even end nodes. Use A["Label"] format, never just ["Label"]
 
 Based on the repository context below, create these 6 diagrams:

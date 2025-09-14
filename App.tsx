@@ -49,7 +49,7 @@ const LogoIcon: React.FC = () => (
 
 
 // Development mode flag - set to true to use mock data
-const USE_MOCK_DATA = true;
+const USE_MOCK_DATA = false;
 
 // Main Application Component
 const App: React.FC = () => {

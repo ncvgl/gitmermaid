@@ -6,7 +6,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { extractRepoContextRobust } from './extractRepoContextRobust.js';
-import { validateMermaidDiagram } from './utils/mermaidValidator.js';
 import { getGitCloneUrl } from './utils/gitUrlParser.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,6 +36,66 @@ const vertexAI = new VertexAI({
 const model = vertexAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
 });
+
+// Helper function to handle parentheses in node definitions
+function formatParentheses(line) {
+  // Skip if line already contains double quotes
+  if (line.includes('"')) {
+    return line;
+  }
+  
+  // Look for pattern like A(text) or B(text with (nested) parens)
+  const nodePattern = /(\w+)\((.+)\)/;
+  const match = line.match(nodePattern);
+  
+  if (match) {
+    // Find the first opening paren after the node identifier
+    const firstParenIndex = line.indexOf('(', line.indexOf(match[1]));
+    // Find the last closing paren on the line
+    const lastParenIndex = line.lastIndexOf(')');
+    
+    if (firstParenIndex !== -1 && lastParenIndex !== -1 && firstParenIndex < lastParenIndex) {
+      return line.substring(0, firstParenIndex + 1) + '"' +
+             line.substring(firstParenIndex + 1, lastParenIndex) + '"' +
+             line.substring(lastParenIndex);
+    }
+  }
+  return line;
+}
+
+// Function to format Mermaid syntax for proper rendering
+function formatMermaidSyntax(rawCode) {
+  // Simple replacement to wrap square bracket content with quotes
+  let formattedCode = rawCode.replace(/\[/g, '["').replace(/\]/g, '"]');
+  // Also wrap curly brace content with quotes
+  formattedCode = formattedCode.replace(/\{/g, '{"').replace(/\}/g, '"}');
+  
+  // Handle pipe characters for edge labels - process line by line
+  const lines = formattedCode.split('\n');
+  const processedLines = lines.map(line => {
+    let processedLine = line;
+    
+    // Handle pipes for edge labels
+    const pipeCount = (processedLine.match(/\|/g) || []).length;
+    if (pipeCount >= 2) {
+      const firstPipeIndex = processedLine.indexOf('|');
+      const secondPipeIndex = processedLine.indexOf('|', firstPipeIndex + 1);
+      
+      if (firstPipeIndex !== -1 && secondPipeIndex !== -1) {
+        processedLine = processedLine.substring(0, firstPipeIndex + 1) + '"' +
+                       processedLine.substring(firstPipeIndex + 1, secondPipeIndex) + '"' +
+                       processedLine.substring(secondPipeIndex);
+      }
+    }
+    
+    // Handle parentheses for rounded rectangle nodes
+    processedLine = formatParentheses(processedLine);
+    
+    return processedLine;
+  });
+  
+  return processedLines.join('\n');
+}
 
 // Read the Gemini prompt from file
 const promptTemplate = fs.readFileSync(path.join(__dirname, 'gemini-prompt-1.txt'), 'utf8');
@@ -115,53 +174,20 @@ app.post('/api/generate-diagram', async (req, res) => {
       throw new Error("Received an empty response from the API.");
     }
 
-    // Simple replacement to wrap square bracket content with quotes
-    const formattedCode = rawCode.replace(/\[/g, '["').replace(/\]/g, '"]');
+    // Format the Mermaid syntax for proper rendering
+    const formattedCode = formatMermaidSyntax(rawCode);
     
-    // Step 4: Validate the generated diagram
-    console.log('🔍 Validating generated diagram...');
-    try {
-      const validationResult = validateMermaidDiagram(formattedCode);
-      console.log(`✅ Diagram validation: ${validationResult.isValid ? 'VALID' : 'INVALID'}`);
-      
-      if (validationResult.hasWarnings()) {
-        console.log(`⚠️  Validation warnings: ${validationResult.warnings.join(', ')}`);
+    // Return the generated diagram without validation
+    res.json({ 
+      diagramCode: formattedCode,
+      metadata: {
+        repoUrl: repoUrl,
+        cloneUrl: cloneUrl,
+        filesAnalyzed: extractionResult.data.fileCount,
+        repoSize: `${(extractionResult.data.totalSize / 1024).toFixed(2)} KB`,
+        processingTime: `${(extractionResult.duration / 1000).toFixed(2)}s`
       }
-      
-      res.json({ 
-        diagramCode: formattedCode,
-        validation: {
-          isValid: validationResult.isValid,
-          errors: validationResult.errors,
-          warnings: validationResult.warnings
-        },
-        metadata: {
-          repoUrl: repoUrl,
-          cloneUrl: cloneUrl,
-          filesAnalyzed: extractionResult.data.fileCount,
-          repoSize: `${(extractionResult.data.totalSize / 1024).toFixed(2)} KB`,
-          processingTime: `${(extractionResult.duration / 1000).toFixed(2)}s`
-        }
-      });
-    } catch (validationError) {
-      console.warn('⚠️  Could not validate diagram:', validationError.message);
-      // Still return the diagram even if validation fails
-      res.json({ 
-        diagramCode: formattedCode,
-        validation: {
-          isValid: null,
-          errors: [`Validation failed: ${validationError.message}`],
-          warnings: []
-        },
-        metadata: {
-          repoUrl: repoUrl,
-          cloneUrl: cloneUrl,
-          filesAnalyzed: extractionResult.data.fileCount,
-          repoSize: `${(extractionResult.data.totalSize / 1024).toFixed(2)} KB`,
-          processingTime: `${(extractionResult.duration / 1000).toFixed(2)}s`
-        }
-      });
-    }
+    });
 
   } catch (error) {
     console.error("Error generating diagram:", error);

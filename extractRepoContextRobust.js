@@ -445,13 +445,23 @@ const ErrorType = {
   NETWORK_ERROR: 'network_error',
   INVALID_URL: 'invalid_url',
   PERMISSION_DENIED: 'permission_denied',
+  TIMEOUT: 'timeout',
   UNKNOWN: 'unknown'
 };
 
 /**
  * Classifies git clone errors based on stderr output
  */
-function classifyCloneError(stderr) {
+function classifyCloneError(stderr, originalError) {
+  // Check for timeout first (comes from originalError, not stderr)
+  if (originalError && originalError.includes('ETIMEDOUT')) {
+    return {
+      type: ErrorType.TIMEOUT,
+      message: 'Repository clone timed out after 20 seconds. This repository is likely too large.',
+      suggestion: 'Try a smaller repository. Large repositories like frameworks or operating systems may exceed the time limit.'
+    };
+  }
+  
   const errorText = stderr.toLowerCase();
   
   if (errorText.includes('repository not found')) {
@@ -611,7 +621,7 @@ async function extractRepoContextRobust(repoUrl, options = {}) {
       console.log('✅ Repository cloned successfully');
     } catch (cloneError) {
       const stderr = cloneError.stderr ? cloneError.stderr.toString() : '';
-      const classifiedError = classifyCloneError(stderr);
+      const classifiedError = classifyCloneError(stderr, cloneError.message);
       
       return {
         type: ResultType.CLONE_ERROR,

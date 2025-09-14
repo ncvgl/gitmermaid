@@ -38,5 +38,115 @@
     "name": "RealWorld",
     "url": "https://github.com/gothinkster/realworld",
     "description": "The mother of all demo apps - Exemplary fullstack Medium.com clone"
+  },
+  {
+    "name": "Lodash",
+    "url": "https://github.com/lodash/lodash",
+    "description": "A modern JavaScript utility library delivering modularity, performance & extras"
+  },
+  {
+    "name": "Underscore.js",
+    "url": "https://github.com/jashkenas/underscore",
+    "description": "JavaScript's utility _ belt - functional programming helpers"
+  },
+  {
+    "name": "Ramda",
+    "url": "https://github.com/ramda/ramda",
+    "description": "A practical functional library for JavaScript programmers"
+  },
+  {
+    "name": "jq",
+    "url": "https://github.com/jqlang/jq",
+    "description": "Command-line JSON processor - lightweight and flexible"
+  },
+  {
+    "name": "bat",
+    "url": "https://github.com/sharkdp/bat",
+    "description": "A cat clone with syntax highlighting and Git integration"
+  },
+  {
+    "name": "fd",
+    "url": "https://github.com/sharkdp/fd",
+    "description": "A simple, fast and user-friendly alternative to find"
+  },
+  {
+    "name": "ripgrep",
+    "url": "https://github.com/BurntSushi/ripgrep",
+    "description": "recursively searches directories for a regex pattern while respecting your gitignore"
+  },
+  {
+    "name": "hyperfine",
+    "url": "https://github.com/sharkdp/hyperfine",
+    "description": "A command-line benchmarking tool"
+  },
+  {
+    "name": "exa",
+    "url": "https://github.com/ogham/exa",
+    "description": "A modern replacement for ls with colors and Git integration"
+  },
+  {
+    "name": "dust",
+    "url": "https://github.com/bootandy/dust",
+    "description": "A more intuitive version of du in rust"
+  },
+  {
+    "name": "8cc",
+    "url": "https://github.com/rui314/8cc",
+    "description": "A Small C Compiler that can compile itself"
+  },
+  {
+    "name": "Prettier",
+    "url": "https://github.com/prettier/prettier",
+    "description": "An opinionated code formatter supporting many languages"
+  },
+  {
+    "name": "vscode-extension-samples",
+    "url": "https://github.com/microsoft/vscode-extension-samples",
+    "description": "Sample code illustrating the VS Code extension API"
+  },
+  {
+    "name": "30-seconds-of-code",
+    "url": "https://github.com/30-seconds/30-seconds-of-code",
+    "description": "Short JavaScript code snippets for all your development needs"
+  },
+  {
+    "name": "public-apis",
+    "url": "https://github.com/public-apis/public-apis",
+    "description": "A collective list of free APIs for use in software and web development"
+  },
+  {
+    "name": "algorithms",
+    "url": "https://github.com/williamfiset/algorithms",
+    "description": "A collection of algorithms and data structures"
+  },
+  {
+    "name": "vim-plug",
+    "url": "https://github.com/junegunn/vim-plug",
+    "description": "Minimalist Vim Plugin Manager"
+  },
+  {
+    "name": "fzf",
+    "url": "https://github.com/junegunn/fzf",
+    "description": "A command-line fuzzy finder"
+  },
+  {
+    "name": "micro",
+    "url": "https://github.com/zyedidia/micro",
+    "description": "A modern and intuitive terminal-based text editor"
+  },
+  {
+    "name": "tldr",
+    "url": "https://github.com/tldr-pages/tldr",
+    "description": "Collaborative cheatsheets for console commands"
+  },
+  {
+    "name": "z",
+    "url": "https://github.com/rupa/z",
+    "description": "z - jump around - tracks your most used directories"
+  },
+  {
+    "name": "oh-my-zsh",
+    "url": "https://github.com/ohmyzsh/ohmyzsh",
+    "description": "A delightful community-driven framework for managing your zsh configuration"
   }
 ]
