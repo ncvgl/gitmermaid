@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { generateDiagram } from './services/geminiService';
-import DiagramDisplay from './components/DiagramDisplay';
+import MarkdownDisplay from './components/MarkdownDisplay';
 import './types';
 import sentences from './sentences.json';
+import mockData from './mock_data.md?raw';
 
 // Custom hook for typewriter effect
 const useTypewriter = (text: string, speed: number = 50) => {
@@ -46,16 +47,16 @@ const LogoIcon: React.FC = () => (
   </svg>
 );
 
-type Tab = 'diagram' | 'code';
+
+// Development mode flag - set to true to use mock data
+const USE_MOCK_DATA = true;
 
 // Main Application Component
 const App: React.FC = () => {
   const [repoUrl, setRepoUrl] = useState<string>('https://github.com/ncvgl/gitmermaid');
-  const [diagramCode, setDiagramCode] = useState<string>('');
+  const [markdownContent, setMarkdownContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('diagram');
-  const [copyButtonText, setCopyButtonText] = useState('Copy');
   const [currentSentence, setCurrentSentence] = useState<string>('');
   const [loadingSeconds, setLoadingSeconds] = useState<number>(0);
   const { displayedText: typewriterText, isTyping } = useTypewriter(currentSentence, 30);
@@ -148,12 +149,17 @@ const App: React.FC = () => {
     }
     setError(null);
     setIsLoading(true);
-    setDiagramCode('');
-    setActiveTab('diagram'); // Reset to diagram view on new generation
+    setMarkdownContent('');
 
     try {
-      const code = await generateDiagram(repoUrl);
-      setDiagramCode(code);
+      if (USE_MOCK_DATA) {
+        // Use mock data for development
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate loading time
+        setMarkdownContent(mockData);
+      } else {
+        const content = await generateDiagram(repoUrl);
+        setMarkdownContent(content);
+      }
     } catch (err: any) {
       setError(err.message || "An unknown error occurred.");
     } finally {
@@ -161,14 +167,6 @@ const App: React.FC = () => {
     }
   }, [repoUrl]);
   
-  const handleCopyCode = useCallback(() => {
-    if (diagramCode) {
-      navigator.clipboard.writeText(diagramCode).then(() => {
-        setCopyButtonText('Copied!');
-        setTimeout(() => setCopyButtonText('Copy'), 2000);
-      });
-    }
-  }, [diagramCode]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased p-4 sm:p-6 lg:p-8">
@@ -217,45 +215,17 @@ const App: React.FC = () => {
             {error}
           </div>
         )}
-        
-        {/* Tabs - Only show when there is diagram code */}
-        {!isLoading && diagramCode && (
-          <div className="mb-4 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('diagram')}
-                className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors
-                  ${activeTab === 'diagram' 
-                    ? 'border-green-500 text-green-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`
-                }
-              >
-                Diagram
-              </button>
-              <button
-                onClick={() => setActiveTab('code')}
-                className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors
-                  ${activeTab === 'code' 
-                    ? 'border-green-500 text-green-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`
-                }
-              >
-                Mermaid Code
-              </button>
-            </nav>
-          </div>
-        )}
 
         {/* Diagram Area */}
         <main className="w-full bg-white border border-gray-200 rounded-lg shadow-sm min-h-[500px] transition-all duration-300 overflow-hidden">
-          {!isLoading && !diagramCode && (
+          {!isLoading && !markdownContent && (
             <div className="flex justify-center items-center h-full min-h-[500px]">
               <div className="text-center text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <h2 className="text-xl font-semibold">Your Diagram Awaits</h2>
-                <p>The generated architecture diagram will appear here.</p>
+                <h2 className="text-xl font-semibold">Your Architecture Analysis Awaits</h2>
+                <p>The generated architecture diagrams and analysis will appear here.</p>
               </div>
             </div>
           )}
@@ -276,24 +246,8 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {!isLoading && diagramCode && (
-            <div className="w-full h-full">
-              {activeTab === 'diagram' && <DiagramDisplay diagramCode={diagramCode} />}
-              {activeTab === 'code' && (
-                <div className="relative w-full h-full bg-gray-900 rounded-md">
-                  <pre className="text-left text-sm text-gray-200 p-4 overflow-auto">
-                    <code>{diagramCode}</code>
-                  </pre>
-                  <button 
-                    onClick={handleCopyCode}
-                    className="absolute top-3 right-3 bg-gray-700 hover:bg-gray-600 text-white text-xs font-semibold py-1 px-3 rounded-md transition-colors"
-                    aria-label="Copy mermaid code"
-                  >
-                    {copyButtonText}
-                  </button>
-                </div>
-              )}
-            </div>
+          {!isLoading && markdownContent && (
+            <MarkdownDisplay content={markdownContent} />
           )}
         </main>
         

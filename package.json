@@ -19,10 +19,12 @@
     "express": "^5.1.0",
     "glob": "^11.0.3",
     "ignore": "^7.0.5",
-    "mermaid": "^11.10.1",
+    "mermaid": "^11.11.0",
     "panzoom": "^9.4.3",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
