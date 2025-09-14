@@ -60,6 +60,13 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content }) => {
   };
 
   const components = {
+    h1: ({ children }: any) => <h1 className="text-3xl font-bold mb-6 text-gray-900">{children}</h1>,
+    h2: ({ children }: any) => <h2 className="text-2xl font-semibold mb-4 mt-8 text-gray-900">{children}</h2>,
+    h3: ({ children }: any) => <h3 className="text-xl font-semibold mb-3 mt-6 text-gray-900">{children}</h3>,
+    p: ({ children }: any) => <p className="mb-4 text-gray-700 leading-relaxed">{children}</p>,
+    strong: ({ children }: any) => <strong className="font-semibold text-gray-900">{children}</strong>,
+    ul: ({ children }: any) => <ul className="mb-4 list-disc pl-6">{children}</ul>,
+    li: ({ children }: any) => <li className="mb-2 text-gray-700">{children}</li>,
     code: ({ node, inline, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || '');
       const language = match ? match[1] : '';
@@ -71,6 +78,14 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content }) => {
               {String(children).replace(/\n$/, '')}
             </div>
           </div>
+        );
+      }
+
+      if (inline) {
+        return (
+          <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props}>
+            {children}
+          </code>
         );
       }
 
@@ -105,7 +120,7 @@ const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content }) => {
       {/* Content Area */}
       <div className="w-full h-full p-6 overflow-auto">
         {viewMode === 'rendered' ? (
-          <div className="prose prose-lg max-w-none">
+          <div className="max-w-none">
             <ReactMarkdown
               components={components}
               remarkPlugins={[remarkGfm]}
