@@ -116,7 +116,7 @@ app.post('/api/generate-diagram', async (req, res) => {
     }
 
     // Simple replacement to wrap square bracket content with quotes
-    const formattedCode = rawCode.replace('[', '["').replace(']', '"]');
+    const formattedCode = rawCode.replace(/\[/g, '["').replace(/\]/g, '"]');
     
     // Step 4: Validate the generated diagram
     console.log('🔍 Validating generated diagram...');
