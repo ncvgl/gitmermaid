@@ -1,6 +1,6 @@
 ```
 npm install
 npm run dev  # Frontend
-npm run server  # Backend
+npm run server:dev  # Backend with auto-restart
 npm run dev:all  # Both
 ```

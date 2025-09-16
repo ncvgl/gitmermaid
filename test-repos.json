@@ -5,9 +5,9 @@
     "description": "A tool for ingesting git repositories"
   },
   {
-    "name": "Ruff",
-    "url": "https://github.com/astral-sh/ruff",
-    "description": "An extremely fast Python linter and code formatter, written in Rust"
+    "name": "chalk",
+    "url": "https://github.com/chalk/chalk",
+    "description": "Terminal string styling done right - 16k+ stars, tiny utility"
   },
   {
     "name": "nanoGPT",

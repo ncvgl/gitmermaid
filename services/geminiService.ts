@@ -1,6 +1,11 @@
+// Use same origin for API calls when deployed, localhost for development
+const API_BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3001' 
+  : window.location.origin;
+
 export const generateDiagram = async (repoUrl: string): Promise<string> => {
   try {
-    const response = await fetch('http://localhost:3001/api/generate-diagram', {
+    const response = await fetch(`${API_BASE_URL}/api/generate-diagram`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

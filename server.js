@@ -14,10 +14,13 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: '.env.local' });
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the frontend build
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Initialize Vertex AI
 const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT;

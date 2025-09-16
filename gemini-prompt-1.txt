@@ -66,7 +66,9 @@ RULES:
 - Include style declarations like: style NodeName fill:#color,stroke:#333,stroke-width:2px
 - CRITICAL: Each diagram must be in its own separate ```mermaid code block with closing ```
 - Do NOT put multiple diagrams in one code block
-- IMPORTANT: Style declarations must come AFTER the graph definition, never inline. Write all nodes and connections first, then add all style declarations at the end
-- IMPORTANT: All nodes must have an explicit node ID, even end nodes. Use A["Label"] format, never just ["Label"]
+- Style declarations must come AFTER the graph definition, never inline. Write all nodes and connections first, then add all style declarations at the end
+- All nodes must have an explicit node ID, even end nodes. Use A[Label] format, never just [Label]
+- Keep each piece of text (node labels, edge labels, subgraph titles...) under 20 characters maximum
+- If you want to use quotes, then use single quotes (') instead of double quotes (")
 
 Based on the repository context below, create these 6 diagrams:

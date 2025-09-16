@@ -9,7 +9,8 @@
     "server:dev": "nodemon server.js",
     "dev:all": "npm run server:dev & npm run dev",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.js"
   },
   "dependencies": {
     "@google-cloud/vertexai": "^1.10.0",
