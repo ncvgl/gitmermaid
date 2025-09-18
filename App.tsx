@@ -4,7 +4,8 @@ import { generateDiagram } from './services/geminiService';
 import MarkdownDisplay from './components/MarkdownDisplay';
 import './types';
 import sentences from './sentences.json';
-import mockData from './mock_data.md?raw';
+// @ts-ignore
+import mockData from "./mock_data.md?raw";
 
 // Custom hook for typewriter effect
 const useTypewriter = (text: string, speed: number = 50) => {
@@ -180,8 +181,8 @@ const App: React.FC = () => {
           </h1>
         </header>
 
-        <p className="text-center text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
-          Enter a public Git repository URL and let AI generate high-level architecture diagrams for you.
+        <p className="text-center text-lg text-gray-600 mb-10 max-w-3xl mx-auto">
+          Enter a public Git repository URL and let AI generate high-level architecture diagrams for you
         </p>
 
         {/* Input Form */}
@@ -236,12 +237,14 @@ const App: React.FC = () => {
                 <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <h2 className="text-xl font-semibold">Analyzing Repository... {loadingSeconds}s</h2>
                 <p className="mb-3">AI is crafting your diagram. This may take a moment.</p>
-                {typewriterText && (
-                  <p className="text-sm text-gray-500 italic min-h-[20px]">
-                    {typewriterText}
-                    {isTyping && <span className="animate-pulse">|</span>}
-                  </p>
-                )}
+                <p className="text-sm text-gray-500 italic min-h-[40px] flex items-center justify-center">
+                  {typewriterText && (
+                    <span>
+                      {typewriterText}
+                      {isTyping && <span className="animate-pulse">|</span>}
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           )}
@@ -252,8 +255,7 @@ const App: React.FC = () => {
         </main>
         
         <footer className="text-center text-gray-500 mt-10 text-sm">
-          <p>Powered by Gemini, Mermaid.js, <a href="https://ncvgl.github.io" target="_blank">ncvgl.github.io</a>
-          </p>
+          <p>Powered by Gemini and Mermaid.js</p>
         </footer>
       </div>
     </div>

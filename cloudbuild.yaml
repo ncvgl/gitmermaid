@@ -1,0 +1,32 @@
+# Define project ID once
+substitutions:
+  _PROJECT_ID: 'ncvgl-gcp'
+
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/${_PROJECT_ID}/gitmermaid', '.']
+  
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/${_PROJECT_ID}/gitmermaid']
+  
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'gitmermaid'
+      - '--image'
+      - 'gcr.io/${_PROJECT_ID}/gitmermaid'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'GOOGLE_CLOUD_PROJECT=${_PROJECT_ID},GOOGLE_CLOUD_LOCATION=us-central1'
+  
+
+images:
+  - 'gcr.io/${_PROJECT_ID}/gitmermaid'
