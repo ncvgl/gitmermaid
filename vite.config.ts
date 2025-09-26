@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      server: {
+        watch: {
+          ignored: ['**/temp-extraction-*/**', '**/cache/**']
+        }
       }
     };
 });
