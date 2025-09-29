@@ -236,7 +236,7 @@ const App: React.FC = () => {
               <div className="text-center text-gray-600">
                 <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <h2 className="text-xl font-semibold">Analyzing Repository... {loadingSeconds}s</h2>
-                <p className="mb-3">AI is crafting your diagram. This may take a moment.</p>
+                <p className="mb-3">AI is crafting your diagram. This may take a minute.</p>
                 <p className="text-sm text-gray-500 italic min-h-[40px] flex items-center justify-center">
                   {typewriterText && (
                     <span>

@@ -457,7 +457,7 @@ function classifyCloneError(stderr, originalError) {
   if (originalError && originalError.includes('ETIMEDOUT')) {
     return {
       type: ErrorType.TIMEOUT,
-      message: 'Repository clone timed out after 20 seconds. This repository is likely too large.',
+      message: 'Sorry, repository is too large. Try a smaller repo.',
       suggestion: 'Try a smaller repository. Large repositories like frameworks or operating systems may exceed the time limit.'
     };
   }
@@ -616,7 +616,7 @@ async function extractRepoContextRobust(repoUrl, options = {}) {
       execSync(`git clone "${repoUrl}" "${cloneDir}"`, {
         cwd: tempDir,
         stdio: 'pipe',
-        timeout: 20000 // 20 second timeout for repos
+        timeout: 60000 // 60 second timeout for repos
       });
       console.log('✅ Repository cloned successfully');
     } catch (cloneError) {

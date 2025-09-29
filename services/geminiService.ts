@@ -22,6 +22,12 @@ export const generateDiagram = async (repoUrl: string): Promise<string> => {
     return data.diagramCode;
   } catch (error) {
     console.error("Error generating diagram:", error);
+
+    // If it's an Error with a message that contains our timeout message, preserve it
+    if (error instanceof Error && error.message.includes("repository is too large")) {
+      throw error;
+    }
+
     throw new Error("Failed to generate the architecture diagram. Please check the repository URL and try again.");
   }
 };
